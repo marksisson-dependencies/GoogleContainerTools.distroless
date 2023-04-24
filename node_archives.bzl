@@ -1,58 +1,84 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//private/remote:node_archive.bzl", "node_archive")
 
 def repositories():
     # Node (https://nodejs.org/en/about/releases/)
     # Follow Node's maintainence schedule and support all LTS versions that are not end of life
-    http_archive(
+    node_archive(
         name = "nodejs14_amd64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "951d64432d1c7e026a585d1c6ec8822a268faa3c9b71e1b8d36dc812c51b661e",
-        strip_prefix = "node-v14.21.2-linux-x64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v14.21.2/node-v14.21.2-linux-x64.tar.gz"],
+        sha256 = "bef2685d9469058c1229cc7789e171861044fe3f70316ec744e9bf3609cd45ed",
+        strip_prefix = "node-v14.21.3-linux-x64/",
+        urls = ["https://nodejs.org/dist/v14.21.3/node-v14.21.3-linux-x64.tar.gz"],
+        version = "14.21.3",
+        architecture = "amd64",
+        control = "//nodejs:control",
     )
 
-    http_archive(
+    node_archive(
         name = "nodejs16_amd64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "23770ba26a52cb8fedd1096613bbc419b8a033d774a457d9024bb5a0159f3585",
-        strip_prefix = "node-v16.19.0-linux-x64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v16.19.0/node-v16.19.0-linux-x64.tar.gz"],
+        sha256 = "7abc0e558fa3b3c4cc0fd3c7fa5dbe61500ba7213f5e87ed560c65a733c6a5c4",
+        strip_prefix = "node-v16.20.0-linux-x64/",
+        urls = ["https://nodejs.org/dist/v16.20.0/node-v16.20.0-linux-x64.tar.gz"],
+        version = "16.19.1",
+        architecture = "amd64",
+        control = "//nodejs:control",
     )
 
-    http_archive(
+    node_archive(
         name = "nodejs18_amd64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "2d2881cf860624b9fa9866670a65708c747d458213bdccaa8e7266b105d404ad",
-        strip_prefix = "node-v18.13.0-linux-x64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v18.13.0/node-v18.13.0-linux-x64.tar.gz"],
+        sha256 = "fc83046a93d2189d919005a348db3b2372b598a145d84eb9781a3a4b0f032e95",
+        strip_prefix = "node-v18.16.0-linux-x64/",
+        urls = ["https://nodejs.org/dist/v18.16.0/node-v18.16.0-linux-x64.tar.gz"],
+        version = "18.16.0",
+        architecture = "amd64",
+        control = "//nodejs:control",
     )
 
-    http_archive(
+    node_archive(
+        name = "nodejs20_amd64",
+        sha256 = "95439a0a836fc858565c7b6a7b1e55d1741901e6f205485e496abbefe973cfce",
+        strip_prefix = "node-v20.0.0-linux-x64/",
+        urls = ["https://nodejs.org/dist/v20.0.0/node-v20.0.0-linux-x64.tar.gz"],
+        version = "20.0.0",
+        architecture = "amd64",
+        control = "//nodejs:control",
+    )
+
+    node_archive(
         name = "nodejs14_arm64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "bb7ac11ee8ff3a06773028d53443769c4b0c0f0e85ece68921645882b181cf80",
-        strip_prefix = "node-v14.21.2-linux-arm64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v14.21.2/node-v14.21.2-linux-arm64.tar.gz"],
+        sha256 = "044b7ec3fea04cd3815d26901ee37203dcc942688b72ee6eac96f6a1ca3cc63f",
+        strip_prefix = "node-v14.21.3-linux-arm64/",
+        urls = ["https://nodejs.org/dist/v14.21.3/node-v14.21.3-linux-arm64.tar.gz"],
+        version = "14.21.3",
+        architecture = "arm64",
+        control = "//nodejs:control",
     )
 
-    http_archive(
+    node_archive(
         name = "nodejs16_arm64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "1d5e66db4e23a4ab2380dfa7cfebea1f960438db6bd2a7095020acfc64545542",
-        strip_prefix = "node-v16.19.0-linux-arm64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v16.19.0/node-v16.19.0-linux-arm64.tar.gz"],
+        sha256 = "58ea2f702936832fcf7d9cf1e9249bb7d9769185f8ad2ece05a70a7f61dbf879",
+        strip_prefix = "node-v16.20.0-linux-arm64/",
+        urls = ["https://nodejs.org/dist/v16.20.0/node-v16.20.0-linux-arm64.tar.gz"],
+        version = "16.19.1",
+        architecture = "arm64",
+        control = "//nodejs:control",
     )
 
-    http_archive(
+    node_archive(
         name = "nodejs18_arm64",
-        build_file = "//nodejs:BUILD.nodejs",
-        sha256 = "dc68e229425b941eeae0b1d59c66c680b56fd536d0ad2311e3fb009bd83661e4",
-        strip_prefix = "node-v18.13.0-linux-arm64/",
-        type = "tar.gz",
-        urls = ["https://nodejs.org/dist/v18.13.0/node-v18.13.0-linux-arm64.tar.gz"],
+        sha256 = "dc3dfaee899ed21682e47eaf15525f85aff29013c392490e9b25219cd95b1c35",
+        strip_prefix = "node-v18.16.0-linux-arm64/",
+        urls = ["https://nodejs.org/dist/v18.16.0/node-v18.16.0-linux-arm64.tar.gz"],
+        version = "18.16.0",
+        architecture = "arm64",
+        control = "//nodejs:control",
+    )
+
+    node_archive(
+        name = "nodejs20_arm64",
+        sha256 = "6eeaf1e93baf82ca95e02590eec65e3187e756ddce6c23bbec1c09d49ebbff2a",
+        strip_prefix = "node-v20.0.0-linux-arm64/",
+        urls = ["https://nodejs.org/dist/v20.0.0/node-v20.0.0-linux-arm64.tar.gz"],
+        version = "20.0.0",
+        architecture = "arm64",
+        control = "//nodejs:control",
     )

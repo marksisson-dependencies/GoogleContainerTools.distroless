@@ -7,60 +7,68 @@ on:
   push:
     branches: [ 'main' ]
 
-jobs:
-  set-matrix:
-    name: Set CI target to matrix
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+permissions:
+  contents: read
 
+jobs:
+  ci-build-test:
+    name: CI build and unit test
+    runs-on: ubuntu-20.04 # most compatible with debian 11
     steps:
       - uses: actions/checkout@v3
-      - uses: bazelbuild/setup-bazelisk@v2
-      - run: sudo apt update && sudo apt install -y jq
-      - id: set-matrix
-        run: echo matrix=$(bazel query 'attr("tags", "'amd64'", "//...")' | tr ':' '/' | awk -F '/' '{print $3}' | uniq | jq -Rc . | jq -cs .) >> $GITHUB_OUTPUT
+      - name: Mount bazel caches
+        uses: actions/cache@v3
+        with:
+            path: |
+                ~/.cache/bazel-repo
+            key: bazel-cache-deps-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', '**/*.yaml', 'WORKSPACE') }}-${{ github.sha }}
+            restore-keys: |
+                bazel-cache-deps-
+      - name: Free space
+        run: |
+          sudo apt-get remove -y '^dotnet-.*'
+          sudo apt-get remove -y '^llvm-.*'
+          sudo apt-get remove -y 'php.*'
+          sudo apt-get remove -y azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          rm -rf /usr/share/dotnet/
+      - name: Fetch
+        run: |
+          for i in $(seq 5); do 
+            bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc fetch //... && break || sleep 20;
+          done
+      - name: Build All Images
+        run: bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc build $(bazel query 'kind(oci_image, deps(:sign_and_push))')
+      - name: Unit Tests
+        run: bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc test //... --build_tests_only
 
-  ci:
-    needs: set-matrix
-    strategy:
-      matrix:
-        target: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
-    name: CI tests for ${{ matrix.target }}
+  ci-images:
+    name: CI image tests
     runs-on: ubuntu-20.04 # most compatible with debian 11
-
     steps:
-    - uses: actions/checkout@v3
-    - uses: bazelbuild/setup-bazelisk@v2
-    - name: Build and test
-      run: |
-        set -ex
-        for i in $(seq 5); do bazel fetch --loading_phase_threads=1 //${{ matrix.target }}/... && break || sleep 20; done
-        targets=$(bazel query 'attr("tags", "'amd64'", "//${{ matrix.target }}/...")')
-        bazel build --curses=no ${targets}
-        bazel test --curses=no --test_output=errors ${targets}
-
-  ci-unit:
-    name: CI unit tests
-    runs-on: ubuntu-20.04 # most compatible with debian 11
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: bazelbuild/setup-bazelisk@v2
-    - name: Build and test
-      run: |
-        set -ex
-        for i in $(seq 5); do bazel fetch --loading_phase_threads=1 //... && break || sleep 20; done
-        bazel build --curses=no //...
-        bazel test --curses=no --test_output=errors //...
-
-  # since the matrix of ci jobs is dynamically generated, we actually make "ci-results" the required job here
-  ci-results: 
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    name: All CI tests pass
-    needs: [ci]
-    steps:
-      - run: |
-          set -e
-          test "${{ needs.ci.result }}" = "success"      
+      - uses: actions/checkout@v3
+      - name: Mount bazel caches
+        uses: actions/cache@v3
+        with:
+            path: |
+                ~/.cache/bazel-repo
+            key: bazel-cache-deps-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', '**/*.yaml', 'WORKSPACE') }}-${{ github.sha }}
+            restore-keys: |
+                bazel-cache-deps-
+      - name: Free space
+        run: |
+          sudo apt-get remove -y '^dotnet-.*'
+          sudo apt-get remove -y '^llvm-.*'
+          sudo apt-get remove -y 'php.*'
+          sudo apt-get remove -y azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          rm -rf /usr/share/dotnet/
+      - name: Fetch
+        run: |
+          for i in $(seq 5); do 
+            bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc fetch $(bazel query 'attr(tags, "amd64", ...)') && break || sleep 20;
+          done
+      - name: Image Tests
+        run: bazel --bazelrc=$GITHUB_WORKSPACE/.github/workflows/ci.bazelrc test $(bazel query 'attr(tags, "amd64", ...)')
